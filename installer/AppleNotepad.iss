@@ -1,4 +1,4 @@
-#define AppVersion "1.0.0"
+﻿#define AppVersion "1.0.1"
 #ifdef InstallerTest
   #define AppName "Apple Notepad Test " + InstallerTest
   #define AppId "AppleNotepad.InstallerTest." + InstallerTest
@@ -59,6 +59,7 @@ Name: "desktopicon"; Description: "{cm:DesktopTask}"; GroupDescription: "{cm:Add
 
 [Files]
 Source: "..\AppleNotepad.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\app.ico"; DestDir: "{app}\assets"; Flags: ignoreversion
 Source: "..\AppleNotepad.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\preview-light.png"; DestDir: "{app}\docs"; Flags: ignoreversion

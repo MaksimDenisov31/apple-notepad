@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -78,7 +78,7 @@ namespace AppleNotepad
             Bind("MarkdownPreview", TogglePreview); Bind("BoldMarkdown", delegate { WrapSelection("**", "**"); }); Bind("ItalicMarkdown", delegate { WrapSelection("*", "*"); });
             Bind("HeadingMarkdown", delegate { InsertLinePrefix("## "); }); Bind("ListMarkdown", delegate { InsertLinePrefix("- "); });
             Bind("LinkMarkdown", delegate { string url = Dialogs.Prompt(Window, "Добавить ссылку", "Адрес ссылки", "https://"); if (url != null) WrapSelection("[", "](" + url + ")"); });
-            Bind("AboutMenu", delegate { MessageBox.Show(Window, "Apple Notepad 1.0\n\nТекстовый редактор для Windows с интерфейсом в стиле macOS.\nРаботает локально, без аккаунта и интернета.\n\nНезависимый проект, не связан с Apple или Microsoft.", "О программе", MessageBoxButton.OK, MessageBoxImage.Information); });
+            Bind("AboutMenu", delegate { MessageBox.Show(Window, "Apple Notepad 1.0.1\n\nТекстовый редактор для Windows с интерфейсом в стиле macOS.\nРаботает локально, без аккаунта и интернета.\n\nНезависимый проект, не связан с Apple или Microsoft.", "О программе", MessageBoxButton.OK, MessageBoxImage.Information); });
             Bind("HelpMenu", delegate { MessageBox.Show(Window, "Ctrl+N — новая вкладка\nCtrl+O — открыть\nCtrl+S — сохранить\nCtrl+Shift+S — сохранить как\nCtrl+W — закрыть вкладку\nCtrl+F / Ctrl+H — поиск / замена\nF3 / Shift+F3 — далее / ранее\nCtrl+G — перейти к строке\nF5 — время и дата\nCtrl+P — печать\nCtrl+колесо — масштаб\nF11 — полный экран\nCtrl+Tab — следующая вкладка\n\nПолная инструкция — README.md рядом с программой.", "Горячие клавиши"); });
             Control<TextBox>("FindText").KeyDown += delegate(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { Find(Keyboard.Modifiers == ModifierKeys.Shift); e.Handled = true; } };
             Control<TabControl>("Documents").SelectionChanged += delegate(object sender, SelectionChangedEventArgs e) { if (e.Source == Control<TabControl>("Documents")) { RefreshStatus(); recoveryDirty = true; } };
