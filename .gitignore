@@ -5,3 +5,5 @@
 *.tmp
 *.user
 .vs/
+/installer-output/
+/.tools/
