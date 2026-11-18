@@ -78,9 +78,10 @@ namespace AppleNotepad
             Bind("MarkdownPreview", TogglePreview); Bind("BoldMarkdown", delegate { WrapSelection("**", "**"); }); Bind("ItalicMarkdown", delegate { WrapSelection("*", "*"); });
             Bind("HeadingMarkdown", delegate { InsertLinePrefix("## "); }); Bind("ListMarkdown", delegate { InsertLinePrefix("- "); });
             Bind("LinkMarkdown", delegate { string url = Dialogs.Prompt(Window, "Добавить ссылку", "Адрес ссылки", "https://"); if (url != null) WrapSelection("[", "](" + url + ")"); });
-            Bind("AboutMenu", delegate { MessageBox.Show(Window, "Apple Notepad 1.0.1\n\nТекстовый редактор для Windows с интерфейсом в стиле macOS.\nРаботает локально, без аккаунта и интернета.\n\nНезависимый проект, не связан с Apple или Microsoft.", "О программе", MessageBoxButton.OK, MessageBoxImage.Information); });
+            Bind("AboutMenu", delegate { MessageBox.Show(Window, "Apple Notepad 1.0.2\n\nТекстовый редактор для Windows с интерфейсом в стиле macOS.\nРаботает локально, без аккаунта и интернета.\n\nНезависимый проект, не связан с Apple или Microsoft.", "О программе", MessageBoxButton.OK, MessageBoxImage.Information); });
             Bind("HelpMenu", delegate { MessageBox.Show(Window, "Ctrl+N — новая вкладка\nCtrl+O — открыть\nCtrl+S — сохранить\nCtrl+Shift+S — сохранить как\nCtrl+W — закрыть вкладку\nCtrl+F / Ctrl+H — поиск / замена\nF3 / Shift+F3 — далее / ранее\nCtrl+G — перейти к строке\nF5 — время и дата\nCtrl+P — печать\nCtrl+колесо — масштаб\nF11 — полный экран\nCtrl+Tab — следующая вкладка\n\nПолная инструкция — README.md рядом с программой.", "Горячие клавиши"); });
             Control<TextBox>("FindText").KeyDown += delegate(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { Find(Keyboard.Modifiers == ModifierKeys.Shift); e.Handled = true; } };
+            MenuStyling.Attach(Window, Control<TextBox>("FindText")); MenuStyling.Attach(Window, Control<TextBox>("ReplaceText"));
             Control<TabControl>("Documents").SelectionChanged += delegate(object sender, SelectionChangedEventArgs e) { if (e.Source == Control<TabControl>("Documents")) { RefreshStatus(); recoveryDirty = true; } };
             Control<ComboBox>("EncodingChoice").SelectionChanged += delegate { if (!syncing && Current != null) { Current.File.EncodingName = (string)((ComboBoxItem)Control<ComboBox>("EncodingChoice").SelectedItem).Tag; MetadataChanged(); } };
             Control<ComboBox>("NewlineChoice").SelectionChanged += delegate { if (!syncing && Current != null) { Current.File.Newline = (string)((ComboBoxItem)Control<ComboBox>("NewlineChoice").SelectedItem).Tag; MetadataChanged(); } };
@@ -116,6 +117,7 @@ namespace AppleNotepad
             header.Children.Add(item.Title); header.Children.Add(close);
             item.Editor = new TextBox { Text = file.Text, AcceptsReturn = true, AcceptsTab = true, VerticalContentAlignment = VerticalAlignment.Top, BorderThickness = new Thickness(0), Padding = new Thickness(28, 20, 28, 30), HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, UndoLimit = 1000, IsUndoEnabled = true };
             item.Editor.Language = System.Windows.Markup.XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
+            MenuStyling.Attach(Window, item.Editor, delegate { ShowFind(false); });
             item.Editor.SetResourceReference(TextBox.BackgroundProperty, "Paper"); item.Editor.SetResourceReference(TextBox.ForegroundProperty, "Ink"); item.Editor.SetResourceReference(TextBox.CaretBrushProperty, "Ink");
             item.Numbers = new Canvas { Width = 52, IsHitTestVisible = false, ClipToBounds = true };
             item.Host = new Grid(); item.Host.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); item.Host.ColumnDefinitions.Add(new ColumnDefinition());
@@ -211,7 +213,7 @@ namespace AppleNotepad
         private void RefreshRecent()
         {
             MenuItem menu = Control<MenuItem>("RecentMenu"); menu.Items.Clear(); menu.IsEnabled = Settings.Recent.Count > 0;
-            foreach (string path in Settings.Recent) { string captured = path; MenuItem item = new MenuItem { Header = path.Replace("_", "__") }; item.Click += delegate { Safe(delegate { OpenPath(captured); }); }; menu.Items.Add(item); }
+            foreach (string path in Settings.Recent) { string captured = path; MenuItem item = new MenuItem { Header = Path.GetFileName(path).Replace("_", "__"), ToolTip = path }; item.Click += delegate { Safe(delegate { OpenPath(captured); }); }; menu.Items.Add(item); }
         }
         internal void ShowFind(bool replace)
         {
@@ -278,6 +280,7 @@ namespace AppleNotepad
         {
             bool dark = Settings.Theme == "dark";
             SetBrush("Chrome", dark ? "#202126" : "#F5F5F7"); SetBrush("Paper", dark ? "#292B31" : "#FFFFFF"); SetBrush("Ink", dark ? "#E6E7ED" : "#25262B"); SetBrush("Muted", dark ? "#A0A3AF" : "#83858D"); SetBrush("Line", dark ? "#3B3D46" : "#E2E3E8");
+            SetBrush("MenuSurface", dark ? "#303238" : "#FAFAFC"); SetBrush("MenuEdge", dark ? "#4B4D55" : "#DCDDE2"); SetBrush("MenuHover", dark ? "#45474F" : "#E7E8ED");
             foreach (EditorTab tab in Tabs) ApplyTabPreferences(tab);
             Control<MenuItem>("WordWrap").IsChecked = Settings.Wrap; Control<MenuItem>("LineNumbers").IsChecked = Settings.LineNumbers; Control<MenuItem>("SpellcheckMenu").IsChecked = Settings.SpellCheck;
             Control<MenuItem>("StatusBarMenu").IsChecked = Settings.StatusBar; Control<MenuItem>("LightTheme").IsChecked = !dark; Control<MenuItem>("DarkTheme").IsChecked = dark;

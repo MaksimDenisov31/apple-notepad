@@ -2,6 +2,12 @@
 
 Текстовый редактор для Windows с оформлением в стиле macOS: светлая и тёмная темы, округлённые кнопки, вкладки и спокойная панель инструментов.
 
+Выпадающие меню и меню по правой кнопке оформлены в том же стиле: округлённые панели, мягкая тень, аккуратные разделители, галочки и подсказки горячих клавиш. Они переключаются вместе со светлой и тёмной темой. Контекстные меню редактора, поиска и полей диалогов поддерживают обычные команды редактирования; в редакторе сохранены подсказки орфографии.
+
+<img src="docs/menu-light.png" width="250" alt="Выпадающее меню в светлой теме"> <img src="docs/menu-dark.png" width="250" alt="Выпадающее меню в тёмной теме">
+
+[Меню по правой кнопке: светлая тема](docs/context-light.png) · [Тёмная тема](docs/context-dark.png)
+
 ![Светлая тема Apple Notepad](docs/preview-light.png)
 
 [Тёмная тема](docs/preview-dark.png)
@@ -10,7 +16,7 @@
 
 ### Обычная установка
 
-1. [Скачайте AppleNotepad-Setup-1.0.1.exe](https://github.com/MaksimDenisovRussia/apple-notepad/releases/download/v1.0.1/AppleNotepad-Setup-1.0.1.exe).
+1. [Скачайте AppleNotepad-Setup-1.0.2.exe](https://github.com/MaksimDenisovRussia/apple-notepad/releases/download/v1.0.2/AppleNotepad-Setup-1.0.2.exe).
 2. Запустите установщик, выберите папку и при желании отметьте ярлык на рабочем столе.
 3. Нажмите **Установить**. Программа появится в меню **Пуск**, удалить её можно через **Параметры Windows → Приложения**.
 
@@ -72,7 +78,7 @@
 
 **Build.bat** собирает WPF-приложение на C# штатным компилятором .NET Framework. Сторонних библиотек и NuGet-пакетов нет.
 
-**BuildInstaller.bat** упаковывает готовый EXE с помощью установленного Inno Setup 6/7 в `installer-output\AppleNotepad-Setup-1.0.1.exe`. После изменения исходников сначала выполните `Build.bat`, затем `BuildInstaller.bat`. Сценарий установки находится в `installer/AppleNotepad.iss`. Inno Setup нужен только разработчику; на компьютере пользователя он не требуется. Установщики публикуются в [Releases](https://github.com/MaksimDenisovRussia/apple-notepad/releases).
+**BuildInstaller.bat** упаковывает готовый EXE с помощью установленного Inno Setup 6/7 в `installer-output\AppleNotepad-Setup-1.0.2.exe`. После изменения исходников сначала выполните `Build.bat`, затем `BuildInstaller.bat`. Сценарий установки находится в `installer/AppleNotepad.iss`. Inno Setup нужен только разработчику; на компьютере пользователя он не требуется. Установщики публикуются в [Releases](https://github.com/MaksimDenisovRussia/apple-notepad/releases).
 
 `tools/VerifyInstaller.ps1` проверяет установку, повторную установку, ярлыки, запуск и удаление на изолированном тестовом AppId, сохраняя пользовательские файлы. Тестовая установка не меняет существующую установку Apple Notepad.
 

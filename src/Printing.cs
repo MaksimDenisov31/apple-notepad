@@ -23,10 +23,12 @@ namespace AppleNotepad
             {
                 DockPanel row = new DockPanel { Margin = new Thickness(0, 0, 0, 8) }; row.Children.Add(new TextBlock { Text = names[i], Width = 100, VerticalAlignment = VerticalAlignment.Center });
                 inputs[i] = new TextBox { Text = values[i].ToString(CultureInfo.CurrentCulture), Padding = new Thickness(5) }; row.Children.Add(inputs[i]); panel.Children.Add(row);
+                MenuStyling.Attach(dialog, inputs[i]);
             }
             CheckBox orientation = new CheckBox { Content = "Альбомная ориентация", IsChecked = landscape, Margin = new Thickness(0, 10, 0, 15) }; panel.Children.Add(orientation);
             panel.Children.Add(new TextBlock { Text = "Верхний колонтитул" }); TextBox head = new TextBox { Text = header, Padding = new Thickness(6), Margin = new Thickness(0, 5, 0, 10) }; panel.Children.Add(head);
             panel.Children.Add(new TextBlock { Text = "Нижний колонтитул" }); TextBox foot = new TextBox { Text = footer, Padding = new Thickness(6), Margin = new Thickness(0, 5, 0, 10) }; panel.Children.Add(foot);
+            MenuStyling.Attach(dialog, head); MenuStyling.Attach(dialog, foot);
             panel.Children.Add(new TextBlock { Text = "&f — файл · &p — страница · &d — дата · &t — время\n&l / &c / &r — слева / по центру / справа", FontSize = 11, Foreground = Brushes.Gray, Margin = new Thickness(0, 0, 0, 15) });
             Button ok = new Button { Content = "Сохранить", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right, Padding = new Thickness(18, 7, 18, 7) }; panel.Children.Add(ok);
             ok.Click += delegate
