@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -30,30 +30,33 @@ namespace AppleNotepad
             panel.Children.Add(new TextBlock { Text = "Нижний колонтитул" }); TextBox foot = new TextBox { Text = footer, Padding = new Thickness(6), Margin = new Thickness(0, 5, 0, 10) }; panel.Children.Add(foot);
             MenuStyling.Attach(dialog, head); MenuStyling.Attach(dialog, foot);
             panel.Children.Add(new TextBlock { Text = "&f — файл · &p — страница · &d — дата · &t — время\n&l / &c / &r — слева / по центру / справа", FontSize = 11, Foreground = Brushes.Gray, Margin = new Thickness(0, 0, 0, 15) });
-            Button ok = new Button { Content = "Сохранить", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right, Padding = new Thickness(18, 7, 18, 7) }; panel.Children.Add(ok);
+            StackPanel actions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+            Button cancel = Dialogs.Button("Отмена"); cancel.IsCancel = true; cancel.Margin = new Thickness(0, 0, 9, 0); cancel.Click += delegate { dialog.Close(); };
+            Button ok = Dialogs.Button("Сохранить", true); ok.IsDefault = true; actions.Children.Add(cancel); actions.Children.Add(ok); panel.Children.Add(actions);
             ok.Click += delegate
             {
                 double[] parsed = new double[4];
-                for (int i = 0; i < 4; i++) if (!Double.TryParse(inputs[i].Text, out parsed[i]) || parsed[i] < 8 || parsed[i] > 65) { MessageBox.Show(dialog, "Поля должны быть от 8 до 65 мм."); return; }
+                for (int i = 0; i < 4; i++) if (!Double.TryParse(inputs[i].Text, out parsed[i]) || parsed[i] < 8 || parsed[i] > 65) { Dialogs.Show(dialog, "Поля должны быть от 8 до 65 мм."); return; }
                 left = parsed[0]; right = parsed[1]; top = parsed[2]; bottom = parsed[3]; landscape = orientation.IsChecked == true; header = head.Text; footer = foot.Text; dialog.Close();
             };
             dialog.ShowDialog();
         }
         internal void Print(Window owner, TextFile file, Preferences settings)
         {
-            PrintDialog dialog = new PrintDialog { UserPageRangeEnabled = true };
-            if (dialog.PrintTicket != null) dialog.PrintTicket.PageOrientation = landscape ? System.Printing.PageOrientation.Landscape : System.Printing.PageOrientation.Portrait;
-            if (dialog.ShowDialog() != true) return;
-            double width = dialog.PrintableAreaWidth, height = dialog.PrintableAreaHeight;
-            FlowDocument document = CreateDocument(file.Text, settings.Font, settings.FontSize, new Size(width, height), new Thickness(left * 96 / 25.4, top * 96 / 25.4, right * 96 / 25.4, bottom * 96 / 25.4));
-            document.FontWeight = settings.Bold ? FontWeights.Bold : FontWeights.Normal; document.FontStyle = settings.Italic ? FontStyles.Italic : FontStyles.Normal;
-            DocumentPaginator source = ((IDocumentPaginatorSource)document).DocumentPaginator; source.ComputePageCount();
-            int first = dialog.PageRangeSelection == PageRangeSelection.UserPages ? Math.Max(0, dialog.PageRange.PageFrom - 1) : 0;
-            int last = dialog.PageRangeSelection == PageRangeSelection.UserPages ? Math.Min(source.PageCount - 1, dialog.PageRange.PageTo - 1) : source.PageCount - 1;
-            if (first > last) { MessageBox.Show(owner, "В документе нет страниц выбранного диапазона."); return; }
-            dialog.PrintDocument(new DecoratedPaginator(source, first, last, String.IsNullOrEmpty(file.Path) ? "Без названия" : Path.GetFileName(file.Path), header, footer), "Apple Notepad — " + Path.GetFileName(file.Path));
-        }
-        internal static FlowDocument CreateDocument(string text, string font, double fontSize, Size size, Thickness margins)
+            using (PrinterPicker picker = new PrinterPicker(owner, String.IsNullOrEmpty(file.Path) ? "Без названия" : Path.GetFileName(file.Path), landscape, delegate(Window dialog) { Setup(dialog); return landscape; }))
+            {
+                if (picker.Window.ShowDialog() != true) return;
+                PrintSelection selected = picker.Result;
+                PrintDialog output = new PrintDialog { PrintQueue = selected.Queue, PrintTicket = selected.Ticket };
+                double width = output.PrintableAreaWidth, height = output.PrintableAreaHeight;
+                FlowDocument document = CreateDocument(file.Text, settings.Font, settings.FontSize, new Size(width, height), new Thickness(left * 96 / 25.4, top * 96 / 25.4, right * 96 / 25.4, bottom * 96 / 25.4));
+                document.FontWeight = settings.Bold ? FontWeights.Bold : FontWeights.Normal; document.FontStyle = settings.Italic ? FontStyles.Italic : FontStyles.Normal;
+                DocumentPaginator source = ((IDocumentPaginatorSource)document).DocumentPaginator; source.ComputePageCount();
+                int first = selected.First, last = Math.Min(source.PageCount - 1, selected.Last);
+                if (first > last) { Dialogs.Show(owner, "В документе нет страниц выбранного диапазона."); return; }
+                output.PrintDocument(new DecoratedPaginator(source, first, last, String.IsNullOrEmpty(file.Path) ? "Без названия" : Path.GetFileName(file.Path), header, footer), "Apple Notepad — " + Path.GetFileName(file.Path));
+            }
+        }        internal static FlowDocument CreateDocument(string text, string font, double fontSize, Size size, Thickness margins)
         {
             if (size.Width - margins.Left - margins.Right < 30 || size.Height - margins.Top - margins.Bottom < 30) throw new ArgumentException("Поля слишком велики для выбранной бумаги.");
             FlowDocument document = new FlowDocument(new Paragraph(new Run(text)) { Margin = new Thickness(0) }) { FontFamily = new FontFamily(font), FontSize = fontSize, PageWidth = size.Width, PageHeight = size.Height, PagePadding = margins, ColumnWidth = Double.PositiveInfinity };

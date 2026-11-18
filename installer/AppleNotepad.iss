@@ -1,4 +1,4 @@
-﻿#define AppVersion "1.0.2"
+#define AppVersion "1.1.0"
 #ifdef InstallerTest
   #define AppName "Apple Notepad Test " + InstallerTest
   #define AppId "AppleNotepad.InstallerTest." + InstallerTest
@@ -68,6 +68,13 @@ Source: "..\docs\menu-light.png"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "..\docs\menu-dark.png"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "..\docs\context-light.png"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "..\docs\context-dark.png"; DestDir: "{app}\docs"; Flags: ignoreversion
+
+Source: "..\docs\controls-light.png"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\docs\controls-dark.png"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\docs\font-light.png"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\docs\font-dark.png"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\docs\open-file.png"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\docs\settings.png"; DestDir: "{app}\docs"; Flags: ignoreversion
 
 [Icons]
 Name: "{userprograms}\{#AppName}\Apple Notepad"; Filename: "{app}\AppleNotepad.exe"; WorkingDir: "{app}"

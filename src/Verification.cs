@@ -87,8 +87,8 @@ namespace AppleNotepad
                 app.Control<MenuItem>("MarkdownPreview").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); Check(app.Current.Preview.Visibility == Visibility.Visible, "Markdown preview opens");
                 app.Control<MenuItem>("MarkdownPreview").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); Check(app.Current.Editor.Visibility == Visibility.Visible, "plain-text editing returns");
                 app.Settings.Theme = "light"; app.Settings.Zoom = 150; app.ApplyPreferences(); Check(app.Current.Editor.FontSize == app.Settings.FontSize * 1.5, "zoom changes font");
-                app.Settings.Zoom = 100; app.ApplyPreferences(); MenuVerification.Run(app); app.SaveSession();
-                File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", "ui-report.txt"), "PASS: window and styles load; tabs/edit/dirty state; find; replacement with one-step undo/redo; actual save; clean tab closing; line numbers; light/dark themes; Markdown preview; zoom; session snapshot. Print pagination is covered by core tests; native printer, font and file picker dialogs require user interaction.\r\n");
+                app.Settings.Zoom = 100; app.ApplyPreferences(); MenuVerification.Run(app); app.Control<TabControl>("Documents").SelectedIndex = 0; InterfaceVerification.Run(app); app.SaveSession();
+                File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", "ui-report.txt"), "PASS: window and styles load; tabs/edit/dirty state; find; replacement with one-step undo/redo; actual save; clean tab closing; line numbers; light/dark themes; Markdown preview; zoom; session snapshot. Print pagination is covered by core tests. Additional control/dialog behavior is covered by interface-report.txt; no print job is submitted.\r\n");
                 app.Window.Close();
             }
             catch (Exception error) { UIFailed = true; Program.Log(error); File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", "ui-report.txt"), error.ToString()); app.Window.Close(); }

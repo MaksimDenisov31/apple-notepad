@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -29,7 +29,7 @@ namespace AppleNotepad
             Preferences value = Storage.Read<Preferences>(Path.Combine(DataDirectory, "settings.json")) ?? new Preferences();
             if (value.Recent == null) value.Recent = new List<string>();
             if (String.IsNullOrWhiteSpace(value.Font)) value.Font = "Consolas";
-            if (value.FontSize < 8 || value.FontSize > 72) value.FontSize = 15;
+            if (value.FontSize < 8 || value.FontSize > 96) value.FontSize = 15;
             if (value.Zoom < 20 || value.Zoom > 500) value.Zoom = 100;
             return value;
         }

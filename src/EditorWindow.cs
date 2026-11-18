@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -13,7 +13,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
 using System.Windows.Threading;
-using Microsoft.Win32;
 
 namespace AppleNotepad
 {
@@ -78,8 +77,8 @@ namespace AppleNotepad
             Bind("MarkdownPreview", TogglePreview); Bind("BoldMarkdown", delegate { WrapSelection("**", "**"); }); Bind("ItalicMarkdown", delegate { WrapSelection("*", "*"); });
             Bind("HeadingMarkdown", delegate { InsertLinePrefix("## "); }); Bind("ListMarkdown", delegate { InsertLinePrefix("- "); });
             Bind("LinkMarkdown", delegate { string url = Dialogs.Prompt(Window, "Добавить ссылку", "Адрес ссылки", "https://"); if (url != null) WrapSelection("[", "](" + url + ")"); });
-            Bind("AboutMenu", delegate { MessageBox.Show(Window, "Apple Notepad 1.0.2\n\nТекстовый редактор для Windows с интерфейсом в стиле macOS.\nРаботает локально, без аккаунта и интернета.\n\nНезависимый проект, не связан с Apple или Microsoft.", "О программе", MessageBoxButton.OK, MessageBoxImage.Information); });
-            Bind("HelpMenu", delegate { MessageBox.Show(Window, "Ctrl+N — новая вкладка\nCtrl+O — открыть\nCtrl+S — сохранить\nCtrl+Shift+S — сохранить как\nCtrl+W — закрыть вкладку\nCtrl+F / Ctrl+H — поиск / замена\nF3 / Shift+F3 — далее / ранее\nCtrl+G — перейти к строке\nF5 — время и дата\nCtrl+P — печать\nCtrl+колесо — масштаб\nF11 — полный экран\nCtrl+Tab — следующая вкладка\n\nПолная инструкция — README.md рядом с программой.", "Горячие клавиши"); });
+            Bind("AboutMenu", delegate { Dialogs.Show(Window, "Apple Notepad 1.1.0\n\nТекстовый редактор для Windows с интерфейсом в стиле macOS.\nРаботает локально, без аккаунта и интернета.\n\nНезависимый проект, не связан с Apple или Microsoft.", "О программе", MessageBoxButton.OK, MessageBoxImage.Information); });
+            Bind("HelpMenu", delegate { Dialogs.Show(Window, "Ctrl+N — новая вкладка\nCtrl+O — открыть\nCtrl+S — сохранить\nCtrl+Shift+S — сохранить как\nCtrl+W — закрыть вкладку\nCtrl+F / Ctrl+H — поиск / замена\nF3 / Shift+F3 — далее / ранее\nCtrl+G — перейти к строке\nF5 — время и дата\nCtrl+P — печать\nCtrl+колесо — масштаб\nF11 — полный экран\nCtrl+Tab — следующая вкладка\n\nПолная инструкция — README.md рядом с программой.", "Горячие клавиши"); });
             Control<TextBox>("FindText").KeyDown += delegate(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { Find(Keyboard.Modifiers == ModifierKeys.Shift); e.Handled = true; } };
             MenuStyling.Attach(Window, Control<TextBox>("FindText")); MenuStyling.Attach(Window, Control<TextBox>("ReplaceText"));
             Control<TabControl>("Documents").SelectionChanged += delegate(object sender, SelectionChangedEventArgs e) { if (e.Source == Control<TabControl>("Documents")) { RefreshStatus(); recoveryDirty = true; } };
@@ -103,7 +102,7 @@ namespace AppleNotepad
         {
             while (node != null) { if (node is Button) return true; node = VisualTreeHelper.GetParent(node); } return false;
         }
-        internal void Safe(Action action) { try { action(); } catch (Exception error) { Program.Log(error); if (TestMode) throw; MessageBox.Show(Window, error.Message, "Apple Notepad", MessageBoxButton.OK, MessageBoxImage.Warning); } }
+        internal void Safe(Action action) { try { action(); } catch (Exception error) { Program.Log(error); if (TestMode) throw; Dialogs.Show(Window, error.Message, "Apple Notepad", MessageBoxButton.OK, MessageBoxImage.Warning); } }
         private void Bind(string name, Action action)
         {
             object control = Window.FindName(name); MenuItem menu = control as MenuItem; ButtonBase button = control as ButtonBase;
@@ -139,7 +138,7 @@ namespace AppleNotepad
             if (Directory.Exists(path)) throw new IOException("Выберите файл, а не папку.");
             if (!File.Exists(path))
             {
-                if (MessageBox.Show(Window, "Файл не найден. Создать новый документ с этим именем?\n" + path, "Apple Notepad", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (Dialogs.Show(Window, "Файл не найден. Создать новый документ с этим именем?\n" + path, "Apple Notepad", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     NewTab(new TextFile { Path = path, MetadataDirty = true });
                 return;
             }
@@ -153,21 +152,20 @@ namespace AppleNotepad
         }
         private void PickOpen()
         {
-            OpenFileDialog dialog = new OpenFileDialog { Title = "Открыть текстовые файлы", Multiselect = true, Filter = "Текстовые файлы|*.txt;*.log;*.md;*.csv;*.json;*.xml;*.ini;*.cs;*.py;*.js;*.html;*.css|Все файлы|*.*" };
-            if (dialog.ShowDialog(Window) == true) foreach (string path in dialog.FileNames) Safe(delegate { OpenPath(path); });
-        }
-        internal bool Save(EditorTab tab, bool saveAs)
+            string directory = Current == null || String.IsNullOrEmpty(Current.File.Path) ? null : Path.GetDirectoryName(Current.File.Path);
+            string[] paths = FilePicker.Open(Window, directory);
+            if (paths != null) foreach (string path in paths) Safe(delegate { OpenPath(path); });
+        }        internal bool Save(EditorTab tab, bool saveAs)
         {
             if (tab == null) return false;
             tab.File.Text = TextFile.Normalize(tab.Editor.Text); string path = tab.File.Path;
             if (saveAs || String.IsNullOrEmpty(path))
             {
-                SaveFileDialog dialog = new SaveFileDialog { Title = "Сохранить текст", Filter = "Текстовый документ|*.txt|Markdown|*.md|Все файлы|*.*", DefaultExt = ".txt", AddExtension = true, FileName = String.IsNullOrEmpty(path) ? "Без названия.txt" : Path.GetFileName(path) };
-                if (!String.IsNullOrEmpty(path)) dialog.InitialDirectory = Path.GetDirectoryName(path);
-                if (dialog.ShowDialog(Window) != true) return false; path = dialog.FileName;
+                string selected = FilePicker.Save(Window, path);
+                if (selected == null) return false; path = selected;
             }
-            else if (tab.File.ChangedOnDisk() && File.Exists(path) && MessageBox.Show(Window, "Файл изменён другой программой. Перезаписать его вашей версией?", "Конфликт изменений", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return false;
-            foreach (EditorTab other in Tabs) if (other != tab && String.Equals(other.File.Path, path, StringComparison.OrdinalIgnoreCase)) { MessageBox.Show(Window, "Этот файл уже открыт в другой вкладке. Сохраните под другим именем.", "Apple Notepad"); return false; }
+            else if (tab.File.ChangedOnDisk() && File.Exists(path) && Dialogs.Show(Window, "Файл изменён другой программой. Перезаписать его вашей версией?", "Конфликт изменений", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return false;
+            foreach (EditorTab other in Tabs) if (other != tab && String.Equals(other.File.Path, path, StringComparison.OrdinalIgnoreCase)) { Dialogs.Show(Window, "Этот файл уже открыт в другой вкладке. Сохраните под другим именем.", "Apple Notepad"); return false; }
             tab.File.Save(path); RefreshTab(tab); Remember(path); RefreshStatus(); recoveryDirty = true;
             if (Settings.RestoreSession) SaveSession(); return true;
         }
@@ -181,7 +179,7 @@ namespace AppleNotepad
         private bool ConfirmClose(EditorTab tab)
         {
             if (!tab.File.Dirty) return true;
-            MessageBoxResult answer = MessageBox.Show(Window, "Сохранить изменения в «" + Name(tab) + "»?", "Закрытие документа", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            MessageBoxResult answer = Dialogs.Show(Window, "Сохранить изменения в «" + Name(tab) + "»?", "Закрытие документа", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
             return answer == MessageBoxResult.No || answer == MessageBoxResult.Yes && Save(tab, false);
         }
         private static string Name(EditorTab tab) { return String.IsNullOrEmpty(tab.File.Path) ? "Без названия" : Path.GetFileName(tab.File.Path); }
@@ -281,6 +279,7 @@ namespace AppleNotepad
             bool dark = Settings.Theme == "dark";
             SetBrush("Chrome", dark ? "#202126" : "#F5F5F7"); SetBrush("Paper", dark ? "#292B31" : "#FFFFFF"); SetBrush("Ink", dark ? "#E6E7ED" : "#25262B"); SetBrush("Muted", dark ? "#A0A3AF" : "#83858D"); SetBrush("Line", dark ? "#3B3D46" : "#E2E3E8");
             SetBrush("MenuSurface", dark ? "#303238" : "#FAFAFC"); SetBrush("MenuEdge", dark ? "#4B4D55" : "#DCDDE2"); SetBrush("MenuHover", dark ? "#45474F" : "#E7E8ED");
+            SetBrush("ScrollThumb", dark ? "#666872" : "#B6B7BD"); SetBrush("ScrollHover", dark ? "#8F929E" : "#8D8F97");
             foreach (EditorTab tab in Tabs) ApplyTabPreferences(tab);
             Control<MenuItem>("WordWrap").IsChecked = Settings.Wrap; Control<MenuItem>("LineNumbers").IsChecked = Settings.LineNumbers; Control<MenuItem>("SpellcheckMenu").IsChecked = Settings.SpellCheck;
             Control<MenuItem>("StatusBarMenu").IsChecked = Settings.StatusBar; Control<MenuItem>("LightTheme").IsChecked = !dark; Control<MenuItem>("DarkTheme").IsChecked = dark;
@@ -319,10 +318,10 @@ namespace AppleNotepad
         }
         private void PickFont()
         {
-            using (System.Windows.Forms.FontDialog picker = new System.Windows.Forms.FontDialog { ShowEffects = false, MinSize = 8, MaxSize = 72, Font = new System.Drawing.Font(Settings.Font, (float)(Settings.FontSize * 72 / 96)) })
-                if (picker.ShowDialog() == System.Windows.Forms.DialogResult.OK) { Settings.Font = picker.Font.FontFamily.Name; Settings.FontSize = picker.Font.SizeInPoints * 96 / 72; Settings.Bold = picker.Font.Bold; Settings.Italic = picker.Font.Italic; ApplyPreferences(); }
-        }
-        private void ShowSettings()
+            FontSelection value = FontPicker.Pick(Window, Settings);
+            if (value == null) return;
+            Settings.Font = value.Family; Settings.FontSize = value.Size; Settings.Bold = value.Bold; Settings.Italic = value.Italic; ApplyPreferences();
+        }        private void ShowSettings()
         {
             Window dialog = Dialogs.Create(Window, "Настройки", 460, 410); StackPanel panel = Dialogs.Body(dialog);
             TextBlock heading = new TextBlock { Text = "Ваше рабочее пространство", FontSize = 20, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 20) }; panel.Children.Add(heading);
@@ -332,7 +331,7 @@ namespace AppleNotepad
             CheckBox numbers = new CheckBox { Content = "Показывать номера строк", IsChecked = Settings.LineNumbers, Margin = new Thickness(0, 0, 0, 18) };
             panel.Children.Add(restore); panel.Children.Add(spell); panel.Children.Add(wrap); panel.Children.Add(numbers);
             panel.Children.Add(new TextBlock { Text = "Восстановление хранится только на этом компьютере.\nОригинальные файлы меняются после «Сохранить».", TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Gray, FontSize = 12, Margin = new Thickness(0, 0, 0, 20) });
-            Button save = new Button { Content = "Готово", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right, Padding = new Thickness(24, 8, 24, 8) }; panel.Children.Add(save);
+            Button save = Dialogs.Button("Готово", true); save.IsDefault = true; save.HorizontalAlignment = HorizontalAlignment.Right; panel.Children.Add(save);
             save.Click += delegate { Settings.RestoreSession = restore.IsChecked == true; Settings.SpellCheck = spell.IsChecked == true; Settings.Wrap = wrap.IsChecked == true; Settings.LineNumbers = numbers.IsChecked == true; ApplyPreferences(); if (!Settings.RestoreSession) vault.Forget(); dialog.Close(); };
             dialog.ShowDialog();
         }
@@ -352,7 +351,7 @@ namespace AppleNotepad
                 if (!File.Exists(tab.File.Path)) return;
                 FileInfo disk = new FileInfo(tab.File.Path);
                 if (disk.LastWriteTimeUtc.Ticks == tab.IgnoredDiskTicks && disk.Length == tab.IgnoredDiskLength) return;
-                if (MessageBox.Show(Window, "Файл «" + Name(tab) + "» изменён другой программой. Загрузить новую версию?" + (tab.File.Dirty ? "\nВаши несохранённые изменения будут заменены." : ""), "Файл изменился", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (Dialogs.Show(Window, "Файл «" + Name(tab) + "» изменён другой программой. Загрузить новую версию?" + (tab.File.Dirty ? "\nВаши несохранённые изменения будут заменены." : ""), "Файл изменился", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 { tab.File = TextFile.Open(tab.File.Path); tab.Editor.IsUndoEnabled = false; tab.Editor.Text = tab.File.Text; tab.Editor.IsUndoEnabled = true; RefreshTab(tab); RefreshStatus(); }
                 else { tab.IgnoredDiskTicks = disk.LastWriteTimeUtc.Ticks; tab.IgnoredDiskLength = disk.Length; }
             }
@@ -366,7 +365,7 @@ namespace AppleNotepad
                 if (Window.WindowState == WindowState.Normal) { Settings.Width = Window.Width; Settings.Height = Window.Height; }
                 Settings.Save(); if (Settings.RestoreSession) SaveSession(); else vault.Forget();
             }
-            catch (Exception error) { e.Cancel = true; Program.Log(error); MessageBox.Show(Window, "Не удалось сохранить состояние. Окно оставлено открытым, чтобы не потерять текст.\n" + error.Message, "Apple Notepad"); }
+            catch (Exception error) { e.Cancel = true; Program.Log(error); Dialogs.Show(Window, "Не удалось сохранить состояние. Окно оставлено открытым, чтобы не потерять текст.\n" + error.Message, "Apple Notepad"); }
         }
         internal void SaveSession()
         {
