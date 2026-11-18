@@ -22,7 +22,7 @@
 
 ### Обычная установка
 
-1. [Скачайте AppleNotepad-Setup-1.1.1.exe](https://github.com/MaksimDenisovRussia/apple-notepad/releases/download/v1.1.1/AppleNotepad-Setup-1.1.1.exe).
+1. [Скачайте AppleNotepad-Setup-1.1.1.exe](https://github.com/MaksimDenisov31/apple-notepad/releases/download/v1.1.1/AppleNotepad-Setup-1.1.1.exe).
 2. Запустите установщик, выберите папку и при желании отметьте ярлык на рабочем столе.
 3. Нажмите **Установить**. Программа появится в меню **Пуск**, удалить её можно через **Параметры Windows → Приложения**.
 
@@ -38,7 +38,7 @@ Windows 10/11 требует подтверждения в системном и
 
 ### Без установки
 
-[Скачайте ZIP проекта](https://github.com/MaksimDenisovRussia/apple-notepad/archive/refs/heads/main.zip), распакуйте его и откройте **AppleNotepad.exe** или **Start.bat**. Готовый EXE включён в репозиторий.
+[Скачайте ZIP проекта](https://github.com/MaksimDenisov31/apple-notepad/archive/refs/heads/main.zip), распакуйте его и откройте **AppleNotepad.exe** или **Start.bat**. Готовый EXE включён в репозиторий.
 
 Для открытия файла можно перетащить его в окно, воспользоваться меню **Файл → Открыть** или передать путь в командной строке.
 
@@ -92,7 +92,7 @@ Windows 10/11 требует подтверждения в системном и
 
 **Build.bat** собирает WPF-приложение на C# штатным компилятором .NET Framework. Сторонних библиотек и NuGet-пакетов нет.
 
-**BuildInstaller.bat** упаковывает готовый EXE с помощью установленного Inno Setup 6/7 в `installer-output\AppleNotepad-Setup-1.1.1.exe`. После изменения исходников сначала выполните `Build.bat`, затем `BuildInstaller.bat`. Сценарий установки находится в `installer/AppleNotepad.iss`. Inno Setup нужен только разработчику; на компьютере пользователя он не требуется. Установщики публикуются в [Releases](https://github.com/MaksimDenisovRussia/apple-notepad/releases).
+**BuildInstaller.bat** упаковывает готовый EXE с помощью установленного Inno Setup 6/7 в `installer-output\AppleNotepad-Setup-1.1.1.exe`. После изменения исходников сначала выполните `Build.bat`, затем `BuildInstaller.bat`. Сценарий установки находится в `installer/AppleNotepad.iss`. Inno Setup нужен только разработчику; на компьютере пользователя он не требуется. Установщики публикуются в [Releases](https://github.com/MaksimDenisov31/apple-notepad/releases).
 
 `tools/VerifyInstaller.ps1` проверяет установку, повторную установку, ярлыки, запуск и удаление на изолированном тестовом AppId, сохраняя пользовательские файлы. Тестовая установка не меняет существующую установку Apple Notepad.
 

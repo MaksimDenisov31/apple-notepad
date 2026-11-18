@@ -21,9 +21,9 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher=Максим Денисов
-AppPublisherURL=https://github.com/MaksimDenisovRussia/apple-notepad
-AppSupportURL=https://github.com/MaksimDenisovRussia/apple-notepad/issues
-AppUpdatesURL=https://github.com/MaksimDenisovRussia/apple-notepad/releases
+AppPublisherURL=https://github.com/MaksimDenisov31/apple-notepad
+AppSupportURL=https://github.com/MaksimDenisov31/apple-notepad/issues
+AppUpdatesURL=https://github.com/MaksimDenisov31/apple-notepad/releases
 DefaultDirName={localappdata}\Programs\{#AppName}
 DefaultGroupName={#AppName}
 DisableWelcomePage=no
@@ -109,7 +109,7 @@ Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueN
 
 [Icons]
 Name: "{userprograms}\{#AppName}\Apple Notepad"; Filename: "{app}\AppleNotepad.exe"; WorkingDir: "{app}"
-Name: "{userprograms}\{#AppName}\Инструкция"; Filename: "https://github.com/MaksimDenisovRussia/apple-notepad#readme"
+Name: "{userprograms}\{#AppName}\Инструкция"; Filename: "https://github.com/MaksimDenisov31/apple-notepad#readme"
 Name: "{userdesktop}\{#AppName}"; Filename: "{app}\AppleNotepad.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
