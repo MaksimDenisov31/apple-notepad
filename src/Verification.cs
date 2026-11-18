@@ -69,6 +69,11 @@ namespace AppleNotepad
             try
             {
                 Check(app.Tabs.Count == 1, "blank initial tab");
+                TrafficVerification.Run(app.Window,new[]{app.Control<Button>("CloseWindow"),app.Control<Button>("MinimizeWindow"),app.Control<Button>("MaximizeWindow")},delegate(string name){InterfaceVerification.Capture(app.Window,name);});
+                Check(true,"caption hover trigger and keyboard symbol visibility verified");
+                app.Control<Button>("MaximizeWindow").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Check(app.Window.WindowState==WindowState.Maximized,"green caption button maximizes");
+                app.Control<Button>("MaximizeWindow").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Check(app.Window.WindowState==WindowState.Normal,"green caption button restores");
+                app.Control<Button>("MinimizeWindow").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Check(app.Window.WindowState==WindowState.Minimized,"yellow caption button minimizes");app.Window.WindowState=WindowState.Normal;
                 app.Current.Editor.Text = "# Мои заметки\n\nМесто для простых мыслей.\n\nПлан на сегодня\n• Сделать главное\n• Сохранить хорошую идею\n• Найти время для себя\n\nПростой текст. Ничего лишнего.";
                 app.Current.Editor.Select(0, 0); Check(app.Current.File.Dirty, "editing marks document dirty");
                 app.ShowFind(true); app.Control<TextBox>("FindText").Text = "текст"; app.Find(false); Check(app.Current.Editor.SelectedText == "текст", "search selects match");
@@ -84,12 +89,13 @@ namespace AppleNotepad
                 app.Settings.LineNumbers = true; app.ApplyPreferences(); app.Window.UpdateLayout();
                 Snapshot(app, "preview-light.png");
                 app.Settings.Theme = "dark"; app.ApplyPreferences(); app.Window.UpdateLayout(); Snapshot(app, "preview-dark.png");
+                TrafficVerification.Run(app.Window,new[]{app.Control<Button>("CloseWindow"),app.Control<Button>("MinimizeWindow"),app.Control<Button>("MaximizeWindow")},delegate(string name){InterfaceVerification.Capture(app.Window,"dark-"+name);});Check(true,"caption hover symbols remain readable in dark theme");
                 app.Control<MenuItem>("MarkdownPreview").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); Check(app.Current.Preview.Visibility == Visibility.Visible, "Markdown preview opens");
                 app.Control<MenuItem>("MarkdownPreview").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); Check(app.Current.Editor.Visibility == Visibility.Visible, "plain-text editing returns");
                 app.Settings.Theme = "light"; app.Settings.Zoom = 150; app.ApplyPreferences(); Check(app.Current.Editor.FontSize == app.Settings.FontSize * 1.5, "zoom changes font");
                 app.Settings.Zoom = 100; app.ApplyPreferences(); MenuVerification.Run(app); app.Control<TabControl>("Documents").SelectedIndex = 0; InterfaceVerification.Run(app); app.SaveSession();
                 File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", "ui-report.txt"), "PASS: window and styles load; tabs/edit/dirty state; find; replacement with one-step undo/redo; actual save; clean tab closing; line numbers; light/dark themes; Markdown preview; zoom; session snapshot. Print pagination is covered by core tests. Additional control/dialog behavior is covered by interface-report.txt; no print job is submitted.\r\n");
-                app.Window.Close();
+                bool closed=false;app.Window.Closed+=delegate{closed=true;};app.Control<Button>("CloseWindow").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Check(closed,"red caption button closes and saves session");
             }
             catch (Exception error) { UIFailed = true; Program.Log(error); File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", "ui-report.txt"), error.ToString()); app.Window.Close(); }
         }

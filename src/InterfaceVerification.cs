@@ -122,7 +122,7 @@ namespace AppleNotepad
             app.Settings.Theme = "light"; app.ApplyPreferences();
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", "interface-report.txt"), "PASS: vertical/horizontal thumb scrolling; encoding/newline controls affect saved bytes; custom font search/style/size/preview/apply/cancel; styled prompts/save cancellation/settings/page setup; file navigation/filter/multi-select/save extension/Unicode/overwrite refusal; print validation without submitting a job; light/dark screenshots. User documents and clipboard were not used.\r\n");
         }
-        private static void Capture(FrameworkElement element, string name)
+        internal static void Capture(FrameworkElement element, string name)
         {
             element.UpdateLayout(); Pump(); RenderTargetBitmap bitmap = new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth), (int)Math.Ceiling(element.ActualHeight), 96, 96, PixelFormats.Pbgra32); bitmap.Render(element);
             PngBitmapEncoder output = new PngBitmapEncoder(); output.Frames.Add(BitmapFrame.Create(bitmap)); using (FileStream stream = File.Create(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-results", name))) output.Save(stream);
